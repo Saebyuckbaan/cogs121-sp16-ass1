@@ -159,6 +159,7 @@ io.on("connection", function(socket) {
     
     	io.emit("newsfeed", NewsFeed );
     // your solution to fill in, see step 7 for details
+    
   
     
 	});
