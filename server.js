@@ -12,6 +12,7 @@ const passport   = require ("passport");
 const overrid    = require("method-override");
 
 
+
 require("dotenv").load();
 var models = require("./models");
 var db = mongoose.connection;
@@ -19,6 +20,7 @@ var db = mongoose.connection;
 var router = { 
 	/* TODO */
 	index: require("./routes/index"),
+	chat: require("./routes/chat")
 
 };
 
@@ -105,10 +107,11 @@ passport.deserializeUser(function(user, done) {
 // Routes
 /* TODO: Routes for OAuth using Passport */
 app.get("/", router.index.view);
+app.get("/chat", router.chat.view);
 
 app.get('/auth/twitter', passport.authenticate('twitter'));
 app.get('/auth/twitter/callback',
-  passport.authenticate('twitter', { successRedirect: '/',
+  passport.authenticate('twitter', { successRedirect: '/chat',
                                      failureRedirect: '/login' }));
 
 app.get('/logout', function(req, res){
@@ -118,12 +121,56 @@ app.get('/logout', function(req, res){
 
 
 // More routes here if needed
-
- io.use(function(socket, next) {
-     session_middleware(socket.request, {}, next);
- });
-
 /* TODO: Server-side Socket.io here */
+io.on("connection", function(socket) {
+
+
+	//console.log ( "%j", socket.request.session.passport.user );
+	//console.log ( socket.request.session.passport.user.photos[0].value );
+	
+	//Create variable user that is parsed user values from passport (Twitter)
+	var user = 
+	{
+		"username": socket.request.session.passport.user.displayName,
+ 		"photo": socket.request.session.passport.user.photos[0].value 
+	};
+	
+	
+
+	//Checks when user disconnected from the Server
+	socket.on('disconnect', function(){
+    	console.log('user disconnected'); 
+  	});
+
+	socket.on("newsfeed", function(msg) {
+  		
+
+  		var date = new Date();
+
+  		//Just Checking for what user says
+   		console.log ( user.username +": " + msg );
+
+		var NewsFeed = new models.message({
+	    	"user": user.username,
+	    	"photo": user.photo,
+		    "message": msg,
+		    "posted": date
+	    });
+    
+    	io.emit("newsfeed", NewsFeed );
+    // your solution to fill in, see step 7 for details
+    /*
+    
+	*/
+    
+	});
+});
+
+
+io.use(function(socket, next) {
+ session_middleware(socket.request, {}, next);
+
+});
 
 // Start Server
 http.listen(app.get("port"), function() {

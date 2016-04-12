@@ -8,5 +8,12 @@ var twitterIDSchema = new Mongoose.Schema({
     "photo": String
 });
 
+var messageSchema = new Mongoose.Schema({
+    "user": String,
+    "photo": String,
+    "message": String,
+    "posted": Date
+});
 
+exports.message = Mongoose.model("message", messageSchema);
 exports.User = Mongoose.model('User', twitterIDSchema);
