@@ -156,7 +156,8 @@ io.on("connection", function(socket) {
 		    "message": msg,
 		    "posted": date
 	    });
-    
+	    
+    	NewsFeed.save();
     	io.emit("newsfeed", NewsFeed );
     // your solution to fill in, see step 7 for details
     
